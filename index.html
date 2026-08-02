@@ -248,10 +248,15 @@ TROCAR: pontos de troca rápida deste template
       display:flex;align-items:center;justify-content:center;
     }
 
-    /* Grade de especialidades */
-    .grade-esp{display:grid;gap:20px;margin-top:32px;grid-template-columns:1fr}
-    @media (min-width:600px){.grade-esp{grid-template-columns:repeat(2,1fr)}}
-    @media (min-width:960px){.grade-esp{grid-template-columns:repeat(3,1fr)}}
+    /* Grade de especialidades (carrossel) */
+    .grade-esp{
+      display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;
+      margin-top:32px;padding:4px 4px 10px 0;-webkit-overflow-scrolling:touch;
+      scrollbar-width:none;-ms-overflow-style:none;
+    }
+    .grade-esp::-webkit-scrollbar{display:none}
+    .grade-esp .esp-card{flex:0 0 260px;scroll-snap-align:start}
+    @media (min-width:560px){.grade-esp .esp-card{flex-basis:300px}}
     .esp-card{
       background:#ffffff;border:1px solid var(--borda);border-radius:14px;overflow:hidden;
       transition:transform .2s ease,box-shadow .2s ease;
@@ -325,15 +330,15 @@ TROCAR: pontos de troca rápida deste template
     .grade-equipe::-webkit-scrollbar{display:none}
     .grade-equipe .medico-card{flex:0 0 200px;scroll-snap-align:start}
     @media (min-width:560px){.grade-equipe .medico-card{flex-basis:230px}}
-    .equipe-dots{display:flex;gap:8px;justify-content:center;margin-top:6px}
-    .equipe-dots[hidden]{display:none}
-    .equipe-dots .dot{
+    .equipe-dots,.servicos-dots{display:flex;gap:8px;justify-content:center;margin-top:6px}
+    .equipe-dots[hidden],.servicos-dots[hidden]{display:none}
+    .equipe-dots .dot,.servicos-dots .dot{
       width:8px;height:8px;padding:0;border:none;border-radius:50%;
       background:var(--borda);cursor:pointer;
       transition:background-color .2s ease,transform .2s ease;
     }
-    .equipe-dots .dot:hover{background:var(--cor-marca-clara)}
-    .equipe-dots .dot.is-ativo{background:var(--cor-marca);transform:scale(1.3)}
+    .equipe-dots .dot:hover,.servicos-dots .dot:hover{background:var(--cor-marca-clara)}
+    .equipe-dots .dot.is-ativo,.servicos-dots .dot.is-ativo{background:var(--cor-marca);transform:scale(1.3)}
     .medico-card{
       background:#ffffff;border:1px solid var(--borda);border-radius:14px;overflow:hidden;
       transition:transform .2s ease,box-shadow .2s ease;
@@ -627,6 +632,7 @@ TROCAR: pontos de troca rápida deste template
             </div>
           </article>
         </div>
+        <div class="servicos-dots" role="group" aria-label="Posição do carrossel de serviços"></div>
       </div>
     </section>
 
@@ -1103,19 +1109,12 @@ TROCAR: pontos de troca rápida deste template
     })();
 
     // ============================================================
-    // CARROSSEL DA EQUIPE
-    // Setas rolam a faixa por 1 card; scroll nativo continua funcionando
-    // (touch no mobile, arrastar/roda no desktop, sem setas). Filtros por
-    // especialidade escondem os cards fora da categoria (via [hidden], some
-    // do fluxo do flex). Dots mostram a página aproximada dentro da faixa.
-    // Sem biblioteca.
+    // CARROSSÉIS (equipe e serviços)
+    // Scroll nativo (touch no mobile, arrastar/roda no desktop). Dots
+    // mostram a página aproximada dentro da faixa. Sem biblioteca.
     // ============================================================
-    (function(){
-      var faixa = document.querySelector('.grade-equipe');
-      var filtros = document.querySelectorAll('.filtro-chip');
-      var cards = document.querySelectorAll('.medico-card');
-      var pontosCaixa = document.querySelector('.equipe-dots');
-      if(!faixa) return;
+    function criarCarrossel(faixa, pontosCaixa){
+      if(!faixa) return null;
       var reduz = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
       function paginaAtual(total){
@@ -1158,6 +1157,20 @@ TROCAR: pontos de troca rápida deste template
 
       faixa.addEventListener('scroll', atualizarPontoAtivo, {passive:true});
       window.addEventListener('resize', construirPontos);
+      construirPontos();
+
+      return { construirPontos: construirPontos };
+    }
+
+    (function(){
+      var carrosselEquipe = criarCarrossel(
+        document.querySelector('.grade-equipe'),
+        document.querySelector('.equipe-dots')
+      );
+      var faixaEquipe = document.querySelector('.grade-equipe');
+      var filtros = document.querySelectorAll('.filtro-chip');
+      var cards = document.querySelectorAll('.medico-card');
+      if(!faixaEquipe || !carrosselEquipe) return;
 
       for(var f=0; f<filtros.length; f++){
         filtros[f].addEventListener('click', function(){
@@ -1172,12 +1185,17 @@ TROCAR: pontos de troca rápida deste template
             var mostra = categoria === 'todos' || cards[c].getAttribute('data-categoria') === categoria;
             cards[c].hidden = !mostra;
           }
-          faixa.scrollTo({left: 0, behavior: 'auto'});
-          construirPontos();
+          faixaEquipe.scrollTo({left: 0, behavior: 'auto'});
+          carrosselEquipe.construirPontos();
         });
       }
+    })();
 
-      construirPontos();
+    (function(){
+      criarCarrossel(
+        document.querySelector('.grade-esp'),
+        document.querySelector('.servicos-dots')
+      );
     })();
 
     // ============================================================
