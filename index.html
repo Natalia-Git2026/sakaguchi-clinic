@@ -1127,6 +1127,10 @@ TROCAR: pontos de troca rápida deste template
       if(!faixa) return null;
       var reduz = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+      function scrollMaximo(){
+        return Math.max(0, faixa.scrollWidth - faixa.clientWidth);
+      }
+
       function paginaAtual(total){
         if(!faixa.clientWidth) return 0;
         var pagina = Math.round(faixa.scrollLeft / faixa.clientWidth);
@@ -1137,7 +1141,10 @@ TROCAR: pontos de troca rápida deste template
         if(!pontosCaixa) return;
         pontosCaixa.innerHTML = '';
         if(!faixa.clientWidth){ pontosCaixa.hidden = true; return; }
-        var totalPaginas = Math.max(1, Math.ceil(faixa.scrollWidth / faixa.clientWidth));
+        // Conta só as páginas que o scroll de fato alcança (mesmo arredondamento de paginaAtual),
+        // senão a última bolinha pode nunca virar "ativa" nem ser alcançável ao clicar.
+        var maximo = scrollMaximo();
+        var totalPaginas = maximo <= 0 ? 1 : Math.round(maximo / faixa.clientWidth) + 1;
         pontosCaixa.hidden = totalPaginas <= 1;
         for(var i=0;i<totalPaginas;i++){
           var ponto = document.createElement('button');
@@ -1146,7 +1153,8 @@ TROCAR: pontos de troca rápida deste template
           ponto.setAttribute('aria-label', 'Ir para o grupo ' + (i+1) + ' de ' + totalPaginas);
           (function(indice){
             ponto.addEventListener('click', function(){
-              faixa.scrollTo({left: indice * faixa.clientWidth, behavior: reduz ? 'auto' : 'smooth'});
+              var alvo = Math.min(indice * faixa.clientWidth, scrollMaximo());
+              faixa.scrollTo({left: alvo, behavior: reduz ? 'auto' : 'smooth'});
             });
           })(i);
           pontosCaixa.appendChild(ponto);
