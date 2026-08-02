@@ -588,43 +588,51 @@ TROCAR: pontos de troca rápida deste template
         <p class="eyebrow anima" style="--i:0">Nossos serviços</p>
         <h2 class="anima" style="--i:1">Serviços pra cuidar de você</h2>
         <p class="secao-intro anima" style="--i:2">[PLACEHOLDER: confirmar com a clínica a lista completa de procedimentos de estética oferecidos antes de publicar.]</p>
+
+        <div class="equipe-filtros servicos-filtros anima" style="--i:3" role="group" aria-label="Filtrar serviços por categoria">
+          <button type="button" class="filtro-chip filtro-chip-servico is-ativo" data-categoria-servico="todos" aria-pressed="true">Todos</button>
+          <button type="button" class="filtro-chip filtro-chip-servico" data-categoria-servico="fisioterapia" aria-pressed="false">Fisioterapia</button>
+          <button type="button" class="filtro-chip filtro-chip-servico" data-categoria-servico="estetica" aria-pressed="false">Estética</button>
+          <button type="button" class="filtro-chip filtro-chip-servico" data-categoria-servico="equipamentos" aria-pressed="false">Equipamentos</button>
+        </div>
+
         <div class="grade-esp">
-          <article class="esp-card anima" style="--i:0">
+          <article class="esp-card anima" style="--i:0" data-categoria-servico="fisioterapia">
             <div class="foto-reservada"><span>[PLACEHOLDER: foto ou imagem do atendimento de fisioterapia]</span></div>
             <div class="esp-corpo">
               <h3>Fisioterapia</h3>
               <p>Avaliação e acompanhamento fisioterapêutico, com equipamentos próprios de ultrassom e eletroestimulação.</p>
             </div>
           </article>
-          <article class="esp-card anima" style="--i:1">
+          <article class="esp-card anima" style="--i:1" data-categoria-servico="fisioterapia">
             <div class="foto-reservada"><span>[PLACEHOLDER: foto ou imagem da fisioterapia neurológica]</span></div>
             <div class="esp-corpo">
               <h3>Fisioterapia neurológica</h3>
               <p>Assistência fisioterapêutica voltada a alterações neurológicas.</p>
             </div>
           </article>
-          <article class="esp-card anima" style="--i:2">
+          <article class="esp-card anima" style="--i:2" data-categoria-servico="fisioterapia">
             <div class="foto-reservada"><span>[PLACEHOLDER: foto ou imagem da fisioterapia oftalmológica]</span></div>
             <div class="esp-corpo">
               <h3>Fisioterapia oftalmológica</h3>
               <p>Assistência fisioterapêutica especializada em oftalmologia.</p>
             </div>
           </article>
-          <article class="esp-card anima" style="--i:0">
+          <article class="esp-card anima" style="--i:0" data-categoria-servico="estetica">
             <div class="foto-reservada"><span>[PLACEHOLDER: foto ou imagem do procedimento de estética facial]</span></div>
             <div class="esp-corpo">
               <h3>Estética facial</h3>
               <p>Cuidados e procedimentos estéticos para pele do rosto. [PLACEHOLDER: confirmar quais procedimentos exatos — ex.: limpeza de pele, peeling, radiofrequência facial.]</p>
             </div>
           </article>
-          <article class="esp-card anima" style="--i:1">
+          <article class="esp-card anima" style="--i:1" data-categoria-servico="estetica">
             <div class="foto-reservada"><span>[PLACEHOLDER: foto ou imagem do procedimento de estética corporal]</span></div>
             <div class="esp-corpo">
               <h3>Estética corporal</h3>
               <p>Procedimentos estéticos para o corpo. [PLACEHOLDER: confirmar quais procedimentos exatos — ex.: drenagem linfática, radiofrequência corporal, massagem modeladora.]</p>
             </div>
           </article>
-          <article class="esp-card anima" style="--i:2">
+          <article class="esp-card anima" style="--i:2" data-categoria-servico="equipamentos">
             <div class="foto-reservada"><span>[PLACEHOLDER: foto dos equipamentos da clínica]</span></div>
             <div class="esp-corpo">
               <h3>Equipamentos próprios</h3>
@@ -1168,7 +1176,7 @@ TROCAR: pontos de troca rápida deste template
         document.querySelector('.equipe-dots')
       );
       var faixaEquipe = document.querySelector('.grade-equipe');
-      var filtros = document.querySelectorAll('.filtro-chip');
+      var filtros = document.querySelectorAll('#equipe .filtro-chip');
       var cards = document.querySelectorAll('.medico-card');
       if(!faixaEquipe || !carrosselEquipe) return;
 
@@ -1192,10 +1200,32 @@ TROCAR: pontos de troca rápida deste template
     })();
 
     (function(){
-      criarCarrossel(
+      var carrosselServicos = criarCarrossel(
         document.querySelector('.grade-esp'),
         document.querySelector('.servicos-dots')
       );
+      var faixaServicos = document.querySelector('.grade-esp');
+      var filtrosServicos = document.querySelectorAll('.filtro-chip-servico');
+      var cardsServicos = document.querySelectorAll('.esp-card');
+      if(!faixaServicos || !carrosselServicos) return;
+
+      for(var s=0; s<filtrosServicos.length; s++){
+        filtrosServicos[s].addEventListener('click', function(){
+          for(var b=0; b<filtrosServicos.length; b++){
+            filtrosServicos[b].classList.remove('is-ativo');
+            filtrosServicos[b].setAttribute('aria-pressed', 'false');
+          }
+          this.classList.add('is-ativo');
+          this.setAttribute('aria-pressed', 'true');
+          var categoria = this.getAttribute('data-categoria-servico');
+          for(var c=0; c<cardsServicos.length; c++){
+            var mostra = categoria === 'todos' || cardsServicos[c].getAttribute('data-categoria-servico') === categoria;
+            cardsServicos[c].hidden = !mostra;
+          }
+          faixaServicos.scrollTo({left: 0, behavior: 'auto'});
+          carrosselServicos.construirPontos();
+        });
+      }
     })();
 
     // ============================================================
